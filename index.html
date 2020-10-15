@@ -98,13 +98,7 @@ let i = 0;
 function loop() {
     //refresh grid
     if (i == creationInterval) {
-        let test1 = randInt(0, gridX);
-        let test2 = 0;
-        let test3 = randInt(minTrailLength, maxTrailLength);
-
-        grid[test1][test2] = test3;
-        console.log(test1, test2, test3);
-        console.log(grid);
+        grid[randInt(0, gridX)][0] = randInt(minTrailLength, maxTrailLength);
         i = 0;
     } else {
         i = i + 1;
