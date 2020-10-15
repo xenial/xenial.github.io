@@ -1,0 +1,159 @@
+<html>
+    <head>
+        <style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #535e6e;
+    text-align: center;
+}
+
+.background {
+    background-color: #24282e;
+}
+
+input[type="range"] {
+    color: #424a57;
+    background-color: #424a57;
+    height: 10px;
+    border-radius: 5px;
+    border: 2px solid #424a57;
+    direction: rtl;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	color: #535e6e;
+    background-color: #535e6e;
+    border-radius: 50%;
+    border: 2px solid #535e6e;
+}
+
+input[type="range"]::-moz-range-thumb {
+	color: #535e6e;
+    background-color: #535e6e;
+    border-radius: 50%;
+    border: 2px solid #535e6e;
+}
+        </style>
+    </head>
+    <body>
+        <div class="center">
+            <pre>
+▐▄• ▄ ▄▄▄ . ▐ ▄ ▪   ▄▄▄· ▄▄▌  
+ █▌█▌▪▀▄.▀·•█▌▐███ ▐█ ▀█ ██•  
+ ·██· ▐▀▀▪▄▐█▐▐▌▐█·▄█▀▀█ ██▪  
+▪▐█·█▌▐█▄▄▌██▐█▌▐█▌▐█ ▪▐▌▐█▌▐▌
+•▀▀ ▀▀ ▀▀▀ ▀▀ █▪▀▀▀ ▀  ▀ .▀▀▀ 
+            </pre>
+            <input type="range" id="size" min="1" max="100" step="1" value="50" oninput="setDelay(this.value)" onchange="setDelay(this.value)">
+        </div>
+        
+        <canvas id="background" class="background"></canvas>
+
+        <script src="pSBC.js"></script>
+        <script>
+//master variables
+let blockSize = 25; //px
+let blockColor = "#424a57";
+let backgroundColor = "#24282e";
+let gridX = Math.ceil(window.innerWidth / blockSize);
+let gridY = Math.ceil(window.innerHeight / blockSize);
+let evolutionDelay = 50; //ms
+let creationInterval = 0;
+let minTrailLength = 3;
+let maxTrailLength = 10;
+
+//event handlers
+function setSize(size) {
+    blockSize = size;
+}
+
+function setDelay(delay) {
+    evolutionDelay = delay;
+}
+
+//utils
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
+}
+
+//initialize canvas
+let canvas = document.getElementById("background");
+let context = canvas.getContext("2d");
+
+//initialize grid
+let grid = new Array();
+for (let i = 0; i < gridX; i++) {
+    grid.push(new Array(gridY).fill(0));
+}
+
+let i = 0;
+function loop() {
+    //refresh grid
+    if (i == creationInterval) {
+        let test1 = randInt(0, gridX);
+        let test2 = 0;
+        let test3 = randInt(minTrailLength, maxTrailLength);
+
+        grid[test1][test2] = test3;
+        console.log(test1, test2, test3);
+        console.log(grid);
+        i = 0;
+    } else {
+        i = i + 1;
+    }
+
+    let skip = false;
+    for (let x = 0; x < gridX; x++) {
+        for (let y = 0; y < gridY; y++) {
+            if (skip) {
+                skip = false;
+                continue;
+            }
+
+            if (grid[x][y] != 0) {
+                grid[x][y + 1] = grid[x][y];
+                grid[x][y] = 0;
+                skip = true;
+            }
+        }
+    }
+
+    //draw grid
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gridX = Math.ceil(window.innerWidth / blockSize);
+    gridY = Math.ceil(window.innerHeight / blockSize);
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let x = 0; x < gridX; x++) {
+        for (let y = 0; y < gridY; y++) {
+            if (grid[x][y] > 0) {
+                context.fillStyle = blockColor;
+                context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+                let trailLength = grid[x][y];
+                for (let j = 1; j <= trailLength; j++) {
+                    color = pSBC(j / trailLength, blockColor, backgroundColor);
+                    context.fillStyle = color;
+                    context.fillRect(x * blockSize, y * blockSize - j * blockSize, blockSize, blockSize);
+                }
+            }
+        }
+    }
+
+    setTimeout(loop, evolutionDelay);
+}
+
+loop();
+        </script>
+    </body>
+</html>
